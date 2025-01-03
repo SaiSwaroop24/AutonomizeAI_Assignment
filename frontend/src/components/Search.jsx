@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { saveUser, fetchRepos } from '../services/api';
+import { saveUser, fetchRepos } from '../api';
 
 const Search = ({ setRepos, setUserInfo }) => {
     const [username, setUsername] = useState('');
