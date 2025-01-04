@@ -31,6 +31,18 @@ function DatabaseManager() {
         }
     };
 
+   
+
+    const handleUpdate = async (username) => {
+        try {
+            await axios.put(`http://localhost:5000/api/users/${username}`, { [updateField]: updateValue });
+            fetchSortedUsers();
+            alert('User updated successfully');
+        } catch (error) {
+            console.error('Error updating user:', error);
+        }
+    };
+
     return (
         <div style={{ padding: '20px' }}>
             <h1>Database Manager</h1>
@@ -49,6 +61,35 @@ function DatabaseManager() {
                 />
                 <button onClick={handleSearch}>Search</button>
             </div>
+
+            <div>
+                <h3>Update User</h3>
+                <select value={updateField} onChange={(e) => setUpdateField(e.target.value)}>
+                    <option value="location">Location</option>
+                    <option value="blog">Blog</option>
+                    <option value="bio">Bio</option>
+                </select>
+                <input
+                    type="text"
+                    placeholder={`Enter new ${updateField}`}
+                    value={updateValue}
+                    onChange={(e) => setUpdateValue(e.target.value)}
+                />
+                <button onClick={() => handleUpdate(prompt('Enter username to update'))}>Update</button>
+            </div>
+
+            <div>
+                <h3>Sort Users</h3>
+                <select value={sortField} onChange={(e) => setSortField(e.target.value)}>
+                    <option value="public_repos">Public Repos</option>
+                    <option value="public_gists">Public Gists</option>
+                    <option value="followers">Followers</option>
+                    <option value="following">Following</option>
+                    <option value="created_at">Created At</option>
+                </select>
+            </div>
+
+            
         </div>
     );
 }
