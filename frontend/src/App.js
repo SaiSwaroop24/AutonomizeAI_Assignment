@@ -9,13 +9,11 @@ function App() {
     const [followers, setFollowers] = useState([]);
     const [selectedRepo, setSelectedRepo] = useState(null);
 
-    // Function to handle the search of the user and reset related data
     const handleSearch = async () => {
         try {
-            // Reset repositories and followers for the new search
             setRepositories([]);
             setFollowers([]);
-            setSelectedRepo(null);  // Clear selected repository if switching users
+            setSelectedRepo(null);  
 
             const userResponse = await axios.post('http://localhost:5000/api/users', { username });
             setUserInfo(userResponse.data.details);
@@ -30,7 +28,7 @@ function App() {
     const fetchFollowers = async () => {
       try {
           const followersResponse = await axios.get(`http://localhost:5000/api/users/${username}/friends`);
-          setFollowers(followersResponse.data);  // Save mutual friends data to the state
+          setFollowers(followersResponse.data);  
           console.log(followers);
       } catch (error) {
           console.error('Error fetching followers:', error);

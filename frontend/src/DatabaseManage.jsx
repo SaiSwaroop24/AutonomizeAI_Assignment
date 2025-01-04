@@ -31,7 +31,15 @@ function DatabaseManager() {
         }
     };
 
-   
+    const handleSoftDelete = async (username) => {
+        try {
+            await axios.delete(`http://localhost:5000/api/users/${username}`);
+            fetchSortedUsers();
+            alert('User soft-deleted successfully');
+        } catch (error) {
+            console.error('Error deleting user:', error);
+        }
+    };
 
     const handleUpdate = async (username) => {
         try {
@@ -89,7 +97,25 @@ function DatabaseManager() {
                 </select>
             </div>
 
-            
+            <div>
+                <h3>User List</h3>
+                {users.length > 0 ? (
+                    <ul>
+                        {users.map((user) => (
+                            <li key={user.username}>
+                                <p>
+                                    <strong>Username:</strong> {user.username}
+                                    <br />
+                                    <strong>Location:</strong> {user.details?.location || 'N/A'}
+                                </p>
+                                <button onClick={() => handleSoftDelete(user.username)}>Soft Delete</button>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>No users found</p>
+                )}
+            </div>
         </div>
     );
 }

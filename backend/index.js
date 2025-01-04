@@ -63,27 +63,22 @@ app.get('/api/users/:username/friends', async (req, res) => {
   const { username } = req.params;
 
   try {
-      // Fetch the list of users the specified username is following
       const response = await axios.get(`https://api.github.com/users/${username}/following`);
       const following = response.data.map((user) => user.login);
-
-      // Fetch the list of users following the specified username
       const response2 = await axios.get(`https://api.github.com/users/${username}/followers`);
       const followers = response2.data.map((user) => user.login);
 
       // Find mutual friends (users who are both following and followed by the user)
       const mutuals = following.filter((user) => followers.includes(user));
-
-      // Update the database with the mutual friends
       const user = await User.findOneAndUpdate(
           { username },
           { $set: { friends: mutuals } },
           { new: true }  // Return the updated user object
       );
       console.log(mutuals);
-      res.json(mutuals);  // Send the updated user info as response
+      res.json(mutuals);  
   } catch (error) {
-      res.status(500).json({ error: error.message });  // Send error response in case of failure
+      res.status(500).json({ error: error.message });  
   }
 });
 
@@ -96,6 +91,7 @@ app.get('/api/users/search', async (req, res) => {
         const query = { isDeleted: false };
         if (username) query['details.login'] = username;
         if (location) query['details.location'] = location;
+        console.log(query);
 
         const users = await User.find(query);
         res.json(users);
