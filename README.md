@@ -54,7 +54,6 @@
    - **Pagination:** Implement pagination for endpoints like `/api/users` to handle large datasets efficiently.
 
 2. **Frontend:**
-   - **Styling:** Use a CSS framework (e.g., Bootstrap, Tailwind) for a polished UI.
    - **Loading States:** Add loading indicators while fetching data from APIs.
    - **Error Handling:** Display user-friendly error messages in case of failures.
    - **State Management Library:** For complex applications, consider a state management library like Redux.
