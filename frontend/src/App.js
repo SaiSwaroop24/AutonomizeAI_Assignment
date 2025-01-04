@@ -1,8 +1,6 @@
-// FRONTEND CODE
-// File: frontend/src/App.js
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import DatabaseManager from './DatabaseManage';
 
 function App() {
     const [username, setUsername] = useState('');
@@ -11,8 +9,14 @@ function App() {
     const [followers, setFollowers] = useState([]);
     const [selectedRepo, setSelectedRepo] = useState(null);
 
+    // Function to handle the search of the user and reset related data
     const handleSearch = async () => {
         try {
+            // Reset repositories and followers for the new search
+            setRepositories([]);
+            setFollowers([]);
+            setSelectedRepo(null);  // Clear selected repository if switching users
+
             const userResponse = await axios.post('http://localhost:5000/api/users', { username });
             setUserInfo(userResponse.data.details);
 
@@ -32,7 +36,6 @@ function App() {
           console.error('Error fetching followers:', error);
       }
   };
-  
 
     const renderRepositoryDetails = (repo) => (
         <div>
@@ -73,9 +76,9 @@ function App() {
           <button onClick={() => setFollowers([])}>Back</button>
       </div>
   );
-  
 
     return (
+      <>
         <div style={{ padding: '20px' }}>
             <h1>GitHub User Explorer</h1>
 
@@ -108,13 +111,10 @@ function App() {
 
             {followers.length > 0 && renderFollowers()}
         </div>
+        <DatabaseManager/>
+        </>
     );
+    
 }
 
 export default App;
-
-// Notes:
-// 1. Ensure Axios is installed: `npm install axios`
-// 2. Ensure the backend is running at http://localhost:5000.
-// 3. Style as per your requirements (basic CSS applied in React inline styles).
-// 4. Follow modular structure for better scalability.
