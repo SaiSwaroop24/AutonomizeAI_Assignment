@@ -15,7 +15,7 @@ function App() {
             setFollowers([]);
             setSelectedRepo(null);  
 
-            const userResponse = await axios.post('https://autonomizeai-assignment.onrender.com', { username });
+            const userResponse = await axios.post('https://autonomizeai-assignment.onrender.com/api/users', { username });
             setUserInfo(userResponse.data.details);
 
             const reposResponse = await axios.get(`https://api.github.com/users/${username}/repos`);
