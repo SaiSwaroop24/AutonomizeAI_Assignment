@@ -6,7 +6,12 @@ const cors = require('cors');
 const app = express();
 const PORT = 5000;
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin:["https://deploy.mern-1whq.vercel.app"],
+    method:["POST","GET"],
+    credentials:true
+} 
+));
 mongoose.connect('mongodb+srv://swaroop:21pa1a1277@cluster0.646q6h1.mongodb.net/', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
