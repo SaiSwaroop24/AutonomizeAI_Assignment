@@ -15,7 +15,7 @@ function App() {
             setFollowers([]);
             setSelectedRepo(null);  
 
-            const userResponse = await axios.post('http://localhost:5000/api/users', { username });
+            const userResponse = await axios.post('https://autonomizeai-assignment.onrender.com', { username });
             setUserInfo(userResponse.data.details);
 
             const reposResponse = await axios.get(`https://api.github.com/users/${username}/repos`);
@@ -27,7 +27,7 @@ function App() {
 
     const fetchFollowers = async () => {
       try {
-          const followersResponse = await axios.get(`http://localhost:5000/api/users/${username}/friends`);
+          const followersResponse = await axios.get(`https://autonomizeai-assignment.onrender.com/api/users/${username}/friends`);
           setFollowers(followersResponse.data);  
           console.log(followers);
       } catch (error) {
