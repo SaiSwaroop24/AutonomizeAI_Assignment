@@ -6,12 +6,18 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 5000;
 app.use(express.json());
-app.use(cors({
-    origin:["https://deploy.mern-1whq.vercel.app"],
-    method:["POST","GET"],
-    credentials:true
-} 
-));
+const cors = require('cors');
+
+// Allow only your frontend's origin
+const corsOptions = {
+  origin: 'https://autonomizeai-assignment-frontendd.onrender.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true, // If you need cookies or authorization headers
+};
+
+// Apply the middleware
+app.use(cors(corsOptions));
+
 mongoose.connect('mongodb+srv://swaroop:21pa1a1277@cluster0.646q6h1.mongodb.net/', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
