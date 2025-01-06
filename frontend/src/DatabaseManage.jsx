@@ -15,7 +15,7 @@ function DatabaseManager() {
 
     const fetchSortedUsers = async () => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/users?sortBy=${sortField}`);
+            const response = await axios.get(`https://autonomizeai-assignment.onrender.com/api/users?sortBy=${sortField}`);
             setUsers(response.data);
         } catch (error) {
             console.error('Error fetching sorted users:', error);
@@ -24,7 +24,7 @@ function DatabaseManager() {
 
     const handleSearch = async () => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/users/search?${searchField}=${searchValue}`);
+            const response = await axios.get(`https://autonomizeai-assignment.onrender.com/api/users/search?${searchField}=${searchValue}`);
             setUsers(response.data);
         } catch (error) {
             console.error('Error searching users:', error);
@@ -33,7 +33,7 @@ function DatabaseManager() {
 
     const handleSoftDelete = async (username) => {
         try {
-            await axios.delete(`http://localhost:5000/api/users/${username}`);
+            await axios.delete(`https://autonomizeai-assignment.onrender.com/api/users/${username}`);
             fetchSortedUsers();
             alert('User soft-deleted successfully');
         } catch (error) {
@@ -43,7 +43,7 @@ function DatabaseManager() {
 
     const handleUpdate = async (username) => {
         try {
-            await axios.put(`http://localhost:5000/api/users/${username}`, { [updateField]: updateValue });
+            await axios.put(`https://autonomizeai-assignment.onrender.com/api/users/${username}`, { [updateField]: updateValue });
             fetchSortedUsers();
             alert('User updated successfully');
         } catch (error) {
