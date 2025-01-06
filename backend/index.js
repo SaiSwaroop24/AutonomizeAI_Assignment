@@ -17,6 +17,8 @@ const corsOptions = {
 
 // Apply the middleware
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Enable preflight across all routes
+
 
 mongoose.connect('mongodb+srv://swaroop:21pa1a1277@cluster0.646q6h1.mongodb.net/', {
     useNewUrlParser: true,
