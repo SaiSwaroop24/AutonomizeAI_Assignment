@@ -49,6 +49,7 @@ app.post('/api/users', async (req, res) => {
 
         if (!user) {
             const response = await axios.get(`https://api.github.com/users/${username}`);
+           console.log(user);
             user = new User({
                 username,
                 details: response.data,
