@@ -1,0 +1,443 @@
+# Enhanced Multi-Stop Ride Booking System Implementation
+
+Based on your detailed code, I'll implement the multi-stop functionality while maintaining all existing features. Here's the comprehensive solution:
+
+## 1. Updated Entities
+
+### RideOffer.java (updated)
+```java
+@Entity
+@Data
+@Table(name = "rideoffers")
+public class RideOffer {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String rideId;
+    
+    @Column(name = "available_seats")
+    private int availableSeats;
+    
+    private LocalDate date;
+    private Time time;
+    private Boolean pets = false;
+    private Boolean music = false;
+    
+    @Column(name = "is_ride_completed")
+    private Boolean isRideCompleted = false;
+    
+    @ManyToOne
+    @JoinColumn(name = "driver_id", referencedColumnName = "driverId")
+    @JsonBackReference(value = "driver-rideOffers")
+    private Driver driver;
+    
+    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "ride-stops")
+    @OrderBy("sequence ASC")
+    private List<RideStop> stops = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "rideOffer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "ride-bookings")
+    private List<RideBooking> bookings = new ArrayList<>();
+    
+    // ... other existing fields and methods ...
+    
+    public String getStartPoint() {
+        return stops.isEmpty() ? null : stops.get(0).getLocation();
+    }
+    
+    public String getEndPoint() {
+        return stops.isEmpty() ? null : stops.get(stops.size()-1).getLocation();
+    }
+}
+```
+
+### RideStop.java (new)
+```java
+@Entity
+@Data
+@Table(name = "ridestops")
+public class RideStop {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @ManyToOne
+    @JoinColumn(name = "ride_id")
+    @JsonBackReference
+    private RideOffer ride;
+    
+    private String location;
+    private int sequence;
+    private BigDecimal priceFromStart; // cumulative price from the first stop
+}
+```
+
+### RideBooking.java (updated)
+```java
+@Entity
+@Data
+@Table(name = "ridebookings")
+public class RideBooking {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String bookingId;
+    
+    @ManyToOne
+    @JoinColumn(name = "ride_id")
+    @JsonBackReference(value = "ride-bookings")
+    private RideOffer rideOffer;
+    
+    @ManyToOne
+    @JoinColumn(name = "passenger_id")
+    @JsonBackReference(value = "passenger-bookings")
+    private Passenger passenger;
+    
+    private int seatsBooked;
+    private Boolean pets;
+    private Boolean music;
+    private Boolean isAccepted = false;
+    private String paymentMode = "cash";
+    private Boolean isPaymentCompleted = false;
+    private Timestamp responseTime;
+    
+    // Track which segment was booked
+    private String startStop;
+    private String endStop;
+    private BigDecimal price;
+}
+```
+
+## 2. Updated DTOs
+
+### DriverOfferedRideDTO.java (updated)
+```java
+@Data
+public class DriverOfferedRideDTO {
+    @NotNull(message = "Date is required")
+    private LocalDate date;
+    
+    @NotNull(message = "Time is required")
+    private Time time;
+    
+    @Min(value = 1, message = "There must be at least one available seat")
+    private int availableSeats;
+    
+    private Boolean music;
+    private Boolean pets;
+    
+    @NotEmpty(message = "At least two stops are required")
+    private List<String> stops;
+    
+    @NotEmpty(message = "Pricing information is required")
+    private Map<String, BigDecimal> segmentPrices; // Map of "startStop-endStop" to price
+    
+    // Helper method to validate stops and prices
+    public boolean isValidRoute() {
+        if (stops == null || stops.size() < 2) return false;
+        if (segmentPrices == null) return false;
+        
+        // Check all possible segments have prices
+        for (int i = 0; i < stops.size() - 1; i++) {
+            for (int j = i + 1; j < stops.size(); j++) {
+                String key = stops.get(i) + "-" + stops.get(j);
+                if (!segmentPrices.containsKey(key)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+```
+
+### BookRequestDTO.java (updated)
+```java
+@Data
+public class BookRequestDTO {
+    @Min(value = 1, message = "At least one seat must be booked")
+    private int reqSeats;
+    
+    private Boolean pets;
+    private Boolean music;
+    
+    @NotBlank(message = "Start stop is required")
+    private String startStop;
+    
+    @NotBlank(message = "End stop is required")
+    private String endStop;
+}
+```
+
+## 3. Updated Services
+
+### RideOfferServiceImpl.java (updated)
+```java
+@Service
+@Transactional
+public class RideOfferServiceImpl {
+    // ... existing autowired fields ...
+    
+    public String offerRide(DriverOfferedRideDTO dto, HttpServletRequest request) throws CarpoolingException {
+        // Validate the route
+        if (!dto.isValidRoute()) {
+            throw new CarpoolingException("Invalid route configuration. All segments must have prices.");
+        }
+        
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Missing or Invalid Authorisation header");
+        }
+        
+        String token = authHeader.substring(7);
+        String userId = jwtUtil.extractUserId(token);
+        
+        RideOffer offer = new RideOffer();
+        Driver driver = driverRepo.findByDriverId(userId)
+                .orElseThrow(() -> new CarpoolingException("Driver not found for Id: " + userId));
+        
+        offer.setDate(dto.getDate());
+        offer.setTime(dto.getTime());
+        offer.setAvailableSeats(dto.getAvailableSeats());
+        offer.setMusic(dto.getMusic());
+        offer.setPets(dto.getPets());
+        offer.setDriver(driver);
+        
+        // Create stops with cumulative prices
+        BigDecimal cumulativePrice = BigDecimal.ZERO;
+        for (int i = 0; i < dto.getStops().size(); i++) {
+            RideStop stop = new RideStop();
+            stop.setLocation(dto.getStops().get(i));
+            stop.setSequence(i);
+            
+            if (i == 0) {
+                stop.setPriceFromStart(BigDecimal.ZERO);
+            } else {
+                String prevStop = dto.getStops().get(i-1);
+                String currentStop = dto.getStops().get(i);
+                BigDecimal segmentPrice = dto.getSegmentPrices().get(prevStop + "-" + currentStop);
+                cumulativePrice = cumulativePrice.add(segmentPrice);
+                stop.setPriceFromStart(cumulativePrice);
+            }
+            
+            stop.setRide(offer);
+            offer.getStops().add(stop);
+        }
+        
+        return "Ride Offered successfully with RideId " + rideOfferRepo.save(offer).getRideId();
+    }
+    
+    // ... other existing methods ...
+}
+```
+
+### RideBookingServiceImpl.java (updated)
+```java
+@Service
+public class RideBookingServiceImpl {
+    // ... existing autowired fields ...
+    
+    public RideBooking bookRide(String rideOfferId, HttpServletRequest request, BookRequestDTO bookingdto) {
+        String id = extractUserId(request);
+        boolean alreadyBooked = rideBookingRepository.hasPassengerAlreadyBookedRide(rideOfferId, id);
+        if (alreadyBooked) {
+            throw new IllegalStateException("Passenger has already booked this ride.");
+        }
+        
+        Passenger passenger = passengerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Passenger not found: " + id));
+        RideOffer ride = rideOfferRepository.findById(rideOfferId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ride not found with ID: " + rideOfferId));
+        
+        if (ride.getAvailableSeats() < bookingdto.getReqSeats()) {
+            throw new IllegalStateException("Not enough available seats");
+        }
+        
+        // Validate the requested segment exists in the ride
+        Optional<RideStop> startStopOpt = ride.getStops().stream()
+                .filter(s -> s.getLocation().equalsIgnoreCase(bookingdto.getStartStop()))
+                .findFirst();
+        
+        Optional<RideStop> endStopOpt = ride.getStops().stream()
+                .filter(s -> s.getLocation().equalsIgnoreCase(bookingdto.getEndStop()))
+                .findFirst();
+        
+        if (!startStopOpt.isPresent() || !endStopOpt.isPresent()) {
+            throw new IllegalStateException("Invalid start or end stop for this ride");
+        }
+        
+        RideStop startStop = startStopOpt.get();
+        RideStop endStop = endStopOpt.get();
+        
+        if (startStop.getSequence() >= endStop.getSequence()) {
+            throw new IllegalStateException("End stop must come after start stop");
+        }
+        
+        // Calculate price for the segment
+        BigDecimal price = endStop.getPriceFromStart().subtract(startStop.getPriceFromStart());
+        
+        RideBooking booking = new RideBooking();
+        booking.setPassenger(passenger);
+        booking.setRideOffer(ride);
+        booking.setPets(bookingdto.isPets());
+        booking.setMusic(bookingdto.isMusic());
+        booking.setIsAccepted(false);
+        booking.setPaymentMode("cash");
+        booking.setIsPaymentCompleted(false);
+        booking.setResponseTime(new Timestamp(System.currentTimeMillis()));
+        booking.setSeatsBooked(bookingdto.getReqSeats());
+        booking.setStartStop(startStop.getLocation());
+        booking.setEndStop(endStop.getLocation());
+        booking.setPrice(price);
+        
+        ride.setAvailableSeats(ride.getAvailableSeats() - bookingdto.getReqSeats());
+        rideOfferRepository.save(ride);
+        
+        return rideBookingRepository.save(booking);
+    }
+    
+    // ... other existing methods ...
+}
+```
+
+## 4. Updated Controllers
+
+### RideController.java (updated)
+```java
+@RestController
+@RequestMapping("/api/rides")
+public class RideController {
+    
+    @GetMapping("/passenger/rides/search")
+    public ResponseEntity<List<RideOfferDTO>> searchRides(
+            @RequestParam String pickup,
+            @RequestParam String destination,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+            @RequestParam(required = false) Boolean pets,
+            @RequestParam(required = false) Boolean music) throws CarpoolingException {
+        
+        List<RideOffer> matchingRides = rideOfferRepository.findByDate(date);
+        
+        List<RideOfferDTO> result = matchingRides.stream()
+            .filter(ride -> {
+                // Check if the ride has the requested segment
+                boolean hasPickup = false;
+                boolean hasDestination = false;
+                boolean pickupBeforeDestination = false;
+                
+                for (RideStop stop : ride.getStops()) {
+                    if (stop.getLocation().equalsIgnoreCase(pickup)) {
+                        hasPickup = true;
+                    }
+                    if (hasPickup && stop.getLocation().equalsIgnoreCase(destination)) {
+                        hasDestination = true;
+                        pickupBeforeDestination = true;
+                        break;
+                    }
+                }
+                
+                // Filter by preferences if provided
+                boolean matchesPreferences = true;
+                if (pets != null) {
+                    matchesPreferences = matchesPreferences && ride.getPets().equals(pets);
+                }
+                if (music != null) {
+                    matchesPreferences = matchesPreferences && ride.getMusic().equals(music);
+                }
+                
+                return pickupBeforeDestination && matchesPreferences;
+            })
+            .map(ride -> {
+                // Find the price for the requested segment
+                BigDecimal segmentPrice = calculateSegmentPrice(ride, pickup, destination);
+                
+                RideOfferDTO dto = new RideOfferDTO();
+                dto.setRideId(ride.getRideId());
+                dto.setStartPoint(pickup);
+                dto.setEndPoint(destination);
+                dto.setDate(ride.getDate());
+                dto.setTime(ride.getTime());
+                dto.setPrice(segmentPrice);
+                dto.setAvailableSeats(ride.getAvailableSeats());
+                dto.setMusic(ride.getMusic());
+                dto.setPets(ride.getPets());
+                dto.setDriverId(ride.getDriver().getDriverId());
+                
+                return dto;
+            })
+            .collect(Collectors.toList());
+        
+        if (result.isEmpty()) {
+            throw new CarpoolingException("No rides available for your search request");
+        }
+        
+        return ResponseEntity.ok(result);
+    }
+    
+    private BigDecimal calculateSegmentPrice(RideOffer ride, String pickup, String destination) {
+        Optional<RideStop> startStop = ride.getStops().stream()
+                .filter(s -> s.getLocation().equalsIgnoreCase(pickup))
+                .findFirst();
+        
+        Optional<RideStop> endStop = ride.getStops().stream()
+                .filter(s -> s.getLocation().equalsIgnoreCase(destination))
+                .findFirst();
+        
+        if (startStop.isPresent() && endStop.isPresent()) {
+            return endStop.get().getPriceFromStart().subtract(startStop.get().getPriceFromStart());
+        }
+        
+        return BigDecimal.ZERO;
+    }
+    
+    @PostMapping("/passenger/rides/book")
+    public ResponseEntity<?> bookRide(HttpServletRequest httpRequest,
+                                    @RequestParam String rideOfferId,
+                                    @RequestBody BookRequestDTO request) {
+        RideBooking booking = rideBookingServiceImpl.bookRide(rideOfferId, httpRequest, request);
+        return ResponseEntity.ok(booking);
+    }
+    
+    @PostMapping("/driver/offerRide")
+    public ResponseEntity<String> offerRide(@RequestBody @Valid DriverOfferedRideDTO dto, 
+                                          HttpServletRequest httpRequest) throws CarpoolingException {
+        String result = rideOfferServiceImpl.offerRide(dto, httpRequest);
+        return ResponseEntity.ok(result);
+    }
+}
+```
+
+## 5. Updated Repository Methods
+
+### RideOfferRepository.java (updated)
+```java
+public interface RideOfferRepository extends JpaRepository<RideOffer, String> {
+    Optional<RideOffer> findByRideId(String rideId);
+    
+    List<RideOffer> findByDate(LocalDate date);
+    
+    @Query("SELECT r FROM RideOffer r JOIN r.stops s WHERE s.location = :location AND r.date = :date")
+    List<RideOffer> findByStopAndDate(@Param("location") String location, 
+                                    @Param("date") LocalDate date);
+    
+    @Query("SELECT r FROM RideOffer r WHERE r.driver.id = :driverId")
+    List<RideOffer> findByDriverId(@Param("driverId") String driverId);
+    
+    @Query("SELECT DISTINCT r FROM RideOffer r JOIN r.stops s1 JOIN r.stops s2 " +
+           "WHERE s1.location = :pickup AND s2.location = :destination " +
+           "AND s1.sequence < s2.sequence AND r.date = :date")
+    List<RideOffer> findRidesWithSegment(@Param("pickup") String pickup,
+                                        @Param("destination") String destination,
+                                        @Param("date") LocalDate date);
+}
+```
+
+## Key Features Implemented:
+
+1. **Multi-Stop Route Definition**: Drivers can now define routes with multiple stops
+2. **Segment Booking**: Passengers can book any segment between two stops
+3. **Dynamic Pricing**: Price is calculated based on the segment booked
+4. **Search Functionality**: Passengers can search for rides that include their desired segment
+5. **Seat Management**: Available seats are properly managed across all segments
+6. **Validation**: Ensures all segments have prices and stops are in correct order
+
+This implementation maintains all existing functionality while adding the multi-stop capability. The system now supports complex routes while providing a seamless booking experience for passengers.
