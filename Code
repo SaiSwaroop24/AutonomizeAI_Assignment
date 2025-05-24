@@ -1389,5 +1389,360 @@ public class UserServiceImpl implements UserService {
 
         return false;
     }
-    
+
+
+
+
+
+
+
+```java
+@Entity
+@Data
+@Table(name = "ride_segments")
+public class RideSegment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long segmentId;
+
+    private String fromLocation;
+    private String toLocation;
+    private int availableSeats;
+    private BigDecimal segmentPrice;  // Price for this specific segment
+
+    @ManyToOne
+    @JoinColumn(name = "ride_id")
+    @JsonBackReference
+    private RideOffer rideOffer;
 }
+```
+
+### 2. DTO Modifications
+
+Update the `DriverOfferedRideDTO` to include segment information:
+
+```java
+@Data
+public class DriverOfferedRideDTO {
+    @NotBlank(message = "Destination cannot be empty")
+    private String destination;
+    @NotBlank(message = "Pickup location cannot be empty")
+    private String pickup;
+    @NotNull(message = "Date is required")
+    private LocalDate date;
+    @NotNull(message = "Time is required")
+    private Time time;
+    @Positive(message = "Price must be a positive value")
+    private BigDecimal totalPrice;  // Total price for the entire route
+    @Min(value = 1, message = "There must be at least one available seat")
+    private int availableSeats;
+    private Boolean music;
+    private Boolean pets;
+    
+    @Valid
+    private List<RideSegmentDTO> segments;  // Ordered list of segments with prices
+}
+
+@Data
+public class RideSegmentDTO {
+    @NotBlank
+    private String fromLocation;
+    @NotBlank
+    private String toLocation;
+    @Positive
+    private BigDecimal price;
+}
+```
+
+### 3. Service Implementation
+
+#### RideOfferServiceImpl
+
+```java
+@Service
+@Transactional
+public class RideOfferServiceImpl {
+    // ... existing autowired dependencies ...
+
+    public String offerRide(DriverOfferedRideDTO dto, HttpServletRequest request) throws CarpoolingException {
+        String userId = jwtUtil.extractUserId(request.getHeader("Authorization").substring(7));
+        Driver driver = driverRepo.findByDriverId(userId)
+                .orElseThrow(() -> new CarpoolingException("Driver not found for Id: " + userId));
+
+        // Validate segments form a continuous route
+        validateSegments(dto.getSegments(), dto.getPickup(), dto.getDestination());
+
+        RideOffer offer = new RideOffer();
+        offer.setPickup(dto.getPickup());
+        offer.setDestination(dto.getDestination());
+        offer.setDate(dto.getDate());
+        offer.setTime(dto.getTime());
+        offer.setTotalPrice(dto.getTotalPrice());
+        offer.setAvailableSeats(dto.getAvailableSeats());
+        offer.setMusic(dto.getMusic());
+        offer.setPets(dto.getPets());
+        offer.setDriver(driver);
+
+        // Create and add segments
+        for (RideSegmentDTO segmentDto : dto.getSegments()) {
+            RideSegment segment = new RideSegment();
+            segment.setFromLocation(segmentDto.getFromLocation());
+            segment.setToLocation(segmentDto.getToLocation());
+            segment.setSegmentPrice(segmentDto.getPrice());
+            segment.setAvailableSeats(dto.getAvailableSeats());
+            segment.setRideOffer(offer);
+            offer.getSegments().add(segment);
+        }
+
+        rideOfferRepo.save(offer);
+        return "Ride offered successfully with Ride ID: " + offer.getRideId();
+    }
+
+    private void validateSegments(List<RideSegmentDTO> segments, String pickup, String destination) {
+        if (segments == null || segments.isEmpty()) {
+            throw new IllegalArgumentException("At least one segment is required");
+        }
+
+        // Check first segment starts with pickup location
+        if (!segments.get(0).getFromLocation().equalsIgnoreCase(pickup)) {
+            throw new IllegalArgumentException("First segment must start from pickup location");
+        }
+
+        // Check last segment ends with destination
+        if (!segments.get(segments.size() - 1).getToLocation().equalsIgnoreCase(destination)) {
+            throw new IllegalArgumentException("Last segment must end at destination");
+        }
+
+        // Check continuity of segments
+        for (int i = 0; i < segments.size() - 1; i++) {
+            String currentEnd = segments.get(i).getToLocation();
+            String nextStart = segments.get(i + 1).getFromLocation();
+            if (!currentEnd.equalsIgnoreCase(nextStart)) {
+                throw new IllegalArgumentException(
+                    String.format("Segment discontinuity between %s and %s", currentEnd, nextStart));
+            }
+        }
+    }
+
+    // ... other existing methods ...
+}
+```
+
+#### RideBookingServiceImpl
+
+```java
+@Service
+public class RideBookingServiceImpl {
+    // ... existing autowired dependencies ...
+
+    public RideBooking bookSegmentRide(String rideId, String from, String to, int seats, HttpServletRequest request) {
+        String passengerId = extractUserId(request);
+        Passenger passenger = passengerRepository.findById(passengerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Passenger not found"));
+        
+        RideOffer ride = rideOfferRepository.findById(rideId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ride not found"));
+
+        // Check if passenger has already booked any segment of this ride
+        boolean alreadyBooked = rideBookingRepository.existsByRideOfferAndPassenger(ride, passenger);
+        if (alreadyBooked) {
+            throw new IllegalStateException("You have already booked a segment of this ride");
+        }
+
+        List<RideSegment> segments = getSegmentRange(ride, from, to);
+        if (segments.isEmpty()) {
+            throw new IllegalArgumentException("Invalid from/to locations for this ride");
+        }
+
+        // Calculate total price for the segments
+        BigDecimal totalPrice = segments.stream()
+                .map(RideSegment::getSegmentPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Check seat availability in all segments
+        for (RideSegment segment : segments) {
+            if (segment.getAvailableSeats() < seats) {
+                throw new IllegalStateException("Not enough seats in segment: " + 
+                    segment.getFromLocation() + " to " + segment.getToLocation());
+            }
+        }
+
+        // Update seat availability
+        segments.forEach(segment -> segment.setAvailableSeats(segment.getAvailableSeats() - seats));
+        rideSegmentRepository.saveAll(segments);
+
+        // Create booking
+        RideBooking booking = new RideBooking();
+        booking.setPassenger(passenger);
+        booking.setRideOffer(ride);
+        booking.setFromLocation(from);
+        booking.setToLocation(to);
+        booking.setSeatsBooked(seats);
+        booking.setTotalPrice(totalPrice);
+        booking.setIsAccepted(false);
+        booking.setIsPaymentCompleted(false);
+        booking.setResponseTime(new Timestamp(System.currentTimeMillis()));
+
+        return rideBookingRepository.save(booking);
+    }
+
+    private List<RideSegment> getSegmentRange(RideOffer ride, String from, String to) {
+        List<RideSegment> allSegments = ride.getSegments();
+        List<RideSegment> bookingSegments = new ArrayList<>();
+        boolean started = false;
+
+        for (RideSegment segment : allSegments) {
+            if (segment.getFromLocation().equalsIgnoreCase(from)) {
+                started = true;
+            }
+            if (started) {
+                bookingSegments.add(segment);
+                if (segment.getToLocation().equalsIgnoreCase(to)) {
+                    break;
+                }
+            }
+        }
+
+        // Verify we found the complete segment path
+        if (bookingSegments.isEmpty() || 
+            !bookingSegments.get(0).getFromLocation().equalsIgnoreCase(from) || 
+            !bookingSegments.get(bookingSegments.size()-1).getToLocation().equalsIgnoreCase(to)) {
+            throw new IllegalArgumentException("Invalid from/to locations for this ride");
+        }
+
+        return bookingSegments;
+    }
+
+    // ... other existing methods ...
+}
+```
+
+### 4. Search Functionality
+
+#### RideOfferRepository
+
+```java
+public interface RideOfferRepository extends JpaRepository<RideOffer, String> {
+    // Find rides that pass through specific segments
+    @Query("SELECT DISTINCT r FROM RideOffer r JOIN r.segments s " +
+           "WHERE s.fromLocation = :from AND s.toLocation = :to " +
+           "AND r.date = :date AND r.isRideCompleted = false")
+    List<RideOffer> findRidesBySegmentAndDate(
+            @Param("from") String from,
+            @Param("to") String to,
+            @Param("date") LocalDate date);
+
+    // Find rides with matching segments and preferences
+    @Query("SELECT DISTINCT r FROM RideOffer r JOIN r.segments s " +
+           "WHERE s.fromLocation = :from AND s.toLocation = :to " +
+           "AND r.date = :date AND r.pets = :pets AND r.music = :music " +
+           "AND r.isRideCompleted = false")
+    List<RideOffer> findRidesBySegmentDateAndPreferences(
+            @Param("from") String from,
+            @Param("to") String to,
+            @Param("date") LocalDate date,
+            @Param("pets") Boolean pets,
+            @Param("music") Boolean music);
+}
+```
+
+#### PassengerServiceImpl
+
+```java
+@Service 
+public class PassengerServiceImpl {
+    // ... existing code ...
+
+    public List<RideOfferDTO> searchSegmentRides(String from, String to, LocalDate date, Boolean pets, Boolean music) {
+        List<RideOffer> rideOffers;
+        
+        if (pets != null || music != null) {
+            rideOffers = rideOfferRepository.findRidesBySegmentDateAndPreferences(
+                from, to, date, pets, music);
+        } else {
+            rideOffers = rideOfferRepository.findRidesBySegmentAndDate(from, to, date);
+        }
+
+        return rideOffers.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    private RideOfferDTO convertToDTO(RideOffer ride) {
+        RideOfferDTO dto = new RideOfferDTO();
+        dto.setRideId(ride.getRideId());
+        dto.setPickup(ride.getPickup());
+        dto.setDestination(ride.getDestination());
+        dto.setDate(ride.getDate());
+        dto.setTime(ride.getTime());
+        dto.setTotalPrice(ride.getTotalPrice());
+        dto.setAvailableSeats(ride.getAvailableSeats());
+        dto.setMusic(ride.getMusic());
+        dto.setPets(ride.getPets());
+        dto.setDriverId(ride.getDriver().getDriverId());
+        
+        // Add segment information
+        List<RideSegmentDTO> segmentDTOs = ride.getSegments().stream()
+            .map(segment -> {
+                RideSegmentDTO segDto = new RideSegmentDTO();
+                segDto.setFromLocation(segment.getFromLocation());
+                segDto.setToLocation(segment.getToLocation());
+                segDto.setPrice(segment.getSegmentPrice());
+                segDto.setAvailableSeats(segment.getAvailableSeats());
+                return segDto;
+            })
+            .collect(Collectors.toList());
+        
+        dto.setSegments(segmentDTOs);
+        return dto;
+    }
+}
+```
+
+### 5. Controller Endpoints
+
+Add these new endpoints to your controller:
+
+```java
+@RestController
+@RequestMapping("/api/rides")
+public class RideController {
+    @Autowired private RideOfferServiceImpl rideOfferService;
+    @Autowired private PassengerServiceImpl passengerService;
+
+    // Post a ride with segments
+    @PostMapping("/offer")
+    public ResponseEntity<String> offerRide(@RequestBody DriverOfferedRideDTO dto, HttpServletRequest request) {
+        try {
+            String result = rideOfferService.offerRide(dto, request);
+            return ResponseEntity.ok(result);
+        } catch (CarpoolingException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Search rides by segment
+    @GetMapping("/search")
+    public ResponseEntity<List<RideOfferDTO>> searchSegmentRides(
+            @RequestParam String from,
+            @RequestParam String to,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Boolean pets,
+            @RequestParam(required = false) Boolean music) {
+        
+        List<RideOfferDTO> rides = passengerService.searchSegmentRides(from, to, date, pets, music);
+        return ResponseEntity.ok(rides);
+    }
+
+    // Book a segment
+    @PostMapping("/book-segment")
+    public ResponseEntity<RideBooking> bookSegment(
+            @RequestParam String rideId,
+            @RequestParam String from,
+            @RequestParam String to,
+            @RequestParam int seats,
+            HttpServletRequest request) {
+        
+        RideBooking booking = rideBookingService.bookSegmentRide(rideId, from, to, seats, request);
+        return ResponseEntity.ok(booking);
+    }
+}
+```
