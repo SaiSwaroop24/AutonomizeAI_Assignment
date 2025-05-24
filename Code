@@ -1,280 +1,1123 @@
-# Enhanced Multi-Stop Ride Booking System Implementation
+package com.infy.carpooling.dto;
 
-Based on your detailed code, I'll implement the multi-stop functionality while maintaining all existing features. Here's the comprehensive solution:
+import com.infy.carpooling.entity.Passenger;
 
-## 1. Updated Entities
+import lombok.Data;
 
-### RideOffer.java (updated)
-```java
-@Entity
 @Data
-@Table(name = "rideoffers")
-public class RideOffer {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String rideId;
-    
-    @Column(name = "available_seats")
+public class BookRequestDTO {
+   //private Passenger passenger;
+	
+   private boolean pets;
+   private boolean music;
+   private int reqSeats;
+   
+}package com.infy.carpooling.dto;
+
+import java.sql.Timestamp;
+
+import lombok.Data;
+
+@Data
+public class DriverDTO {
+   
+    // Constructors, getters, setters
+   
+
+    // getters and setters
+	private String driverId;
+	private String email;
+	private String password;
+	private String name;
+	private String age;
+	private String gender;
+	private String phone;
+	private byte[] photo;
+	private Timestamp availableTimeFrom;
+	private Timestamp availableTimeTo;
+	private String upiId;
+	private String isBlocked;
+}package com.infy.carpooling.dto;
+
+import java.math.BigDecimal;
+import java.sql.Time;
+import java.time.LocalDate;
+import java.util.List;
+
+import com.infy.carpooling.entity.RideSegment;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.Data;
+
+@Data
+public class DriverOfferedRideDTO {
+
+    @NotBlank(message = "Destination cannot be empty")
+    private String destination;
+
+    @NotBlank(message = "Pickup location cannot be empty")
+    private String pickup;
+
+    @NotNull(message = "Date is required")
+    private LocalDate date;
+
+    @NotNull(message = "Time is required")
+    private Time time;
+
+    @NotNull(message = "Price is required")
+    @Positive(message = "Price must be a positive value")
+    private BigDecimal price;
+
+    @Min(value = 1, message = "There must be at least one available seat")
     private int availableSeats;
+
+    private Boolean music;
+
+    private Boolean pets;
+    private List<RideSegment> stops; 
     
+
+}package com.infy.carpooling.dto;
+
+import com.infy.carpooling.entity.Gender;
+
+import lombok.Data;
+
+@Data
+public class PassengerDataDTO {
+	
+
+	public PassengerDataDTO(String passengerId2, String email2, String name2, String age2, Gender gender2,
+			String phone2, String bookingId2, Boolean isAccepted) {
+		// TODO Auto-generated constructor stub
+		this.passengerId = passengerId2;
+		this.email = email2;
+		this.name = name2;
+		this.age = age2;
+		this.gender = gender2.toString();
+		this.phone = phone2;
+		this.bookingId = bookingId2;
+		this.isAccepted=isAccepted;
+	}
+	private String passengerId;
+	private String email;
+	private String name;
+	private String age;
+	private String gender;
+	private String phone;
+	private String bookingId;
+	private Boolean isAccepted;
+}package com.infy.carpooling.dto;
+
+import com.infy.carpooling.entity.Gender;
+
+import lombok.Data;
+
+@Data
+public class PassengerDTO {
+	public PassengerDTO(String passengerId2, String email2, String password2, String name2, String age2, Gender gender2,
+			String phone2, Boolean isBlocked2) {
+		// TODO Auto-generated constructor stub
+	}
+	private String passengerId;
+	private String email;
+	private String password;
+	private String name;
+	private String age;
+	private String gender;
+	private String phone;
+	private byte[] photo;
+	private String isBlocked;
+	
+}package com.infy.carpooling.dto;
+
+import java.sql.Timestamp;
+
+import com.infy.carpooling.entity.Passenger;
+import com.infy.carpooling.entity.RideOffer;
+
+import lombok.Data;
+@Data
+public class RideBookingDTO {
+    private String bookingId;
+    private String passengerId;
+    private int seatsBooked;
+	private Timestamp bookingTime;
+	private Boolean isAccepted;
+	private Boolean isConfirmed;
+	private Boolean isPaymentCompleted;
+	private Boolean music;
+	private Passenger passenger;
+	private String paymentmode;
+	private Boolean pets;
+	private Timestamp responseTime;
+	private RideOffer rideOffer;
+	
+	
+
+    // Constructors, getters, setters
+    public RideBookingDTO(String bookingId, String passengerId, int seatsBooked) {
+        this.bookingId = bookingId;
+        this.passengerId = passengerId;
+        this.seatsBooked = seatsBooked;
+    }
+
+	public RideBookingDTO(String bookingId2, Timestamp bookingTime, Boolean isAccepted, Boolean isConfirmed,
+			Boolean isPaymentCompleted, Boolean music, Passenger passenger, String paymentmode, Boolean pets,
+			Timestamp responseTime, RideOffer rideOffer, int seatsBooked2) {
+		// TODO Auto-generated constructor stub
+		this.bookingId=bookingId2;
+		this.bookingTime=bookingTime;
+		this.isAccepted=isAccepted;
+		this.isConfirmed=isConfirmed;
+		this.isPaymentCompleted=isPaymentCompleted;
+		this.music=music;
+		this.passenger=passenger;
+		this.paymentmode=paymentmode;
+		this.pets=pets;
+		this.responseTime=responseTime;
+		this.rideOffer=rideOffer;
+		this.seatsBooked=seatsBooked2;
+		
+		
+		
+	}
+
+    // getters and setters
+}
+package com.infy.carpooling.dto;
+
+import java.sql.Timestamp;
+
+import com.infy.carpooling.entity.Passenger;
+import com.infy.carpooling.entity.RideOffer;
+
+import lombok.Data;
+@Data
+public class RideBookingDTO {
+    private String bookingId;
+    private String passengerId;
+    private int seatsBooked;
+	private Timestamp bookingTime;
+	private Boolean isAccepted;
+	private Boolean isConfirmed;
+	private Boolean isPaymentCompleted;
+	private Boolean music;
+	private Passenger passenger;
+	private String paymentmode;
+	private Boolean pets;
+	private Timestamp responseTime;
+	private RideOffer rideOffer;
+	
+	
+
+    // Constructors, getters, setters
+    public RideBookingDTO(String bookingId, String passengerId, int seatsBooked) {
+        this.bookingId = bookingId;
+        this.passengerId = passengerId;
+        this.seatsBooked = seatsBooked;
+    }
+
+	public RideBookingDTO(String bookingId2, Timestamp bookingTime, Boolean isAccepted, Boolean isConfirmed,
+			Boolean isPaymentCompleted, Boolean music, Passenger passenger, String paymentmode, Boolean pets,
+			Timestamp responseTime, RideOffer rideOffer, int seatsBooked2) {
+		// TODO Auto-generated constructor stub
+		this.bookingId=bookingId2;
+		this.bookingTime=bookingTime;
+		this.isAccepted=isAccepted;
+		this.isConfirmed=isConfirmed;
+		this.isPaymentCompleted=isPaymentCompleted;
+		this.music=music;
+		this.passenger=passenger;
+		this.paymentmode=paymentmode;
+		this.pets=pets;
+		this.responseTime=responseTime;
+		this.rideOffer=rideOffer;
+		this.seatsBooked=seatsBooked2;
+		
+		
+		
+	}
+
+    // getters and setters
+}package com.infy.carpooling.dto;
+
+import java.sql.Timestamp;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class RideBookingResponseDTO {
+	private String bookingId;
+	private boolean pets;
+	private boolean music;
+	private boolean isAccepted;
+	private boolean isPaymentCompleted;
+	private String paymentMode;
+	private Timestamp responseTime;
+	private String rideId;
+	private String driverId;
+	
+}package com.infy.carpooling.dto;
+
+import java.math.BigDecimal;
+
+import java.sql.Time;
+import java.time.LocalDate;
+import java.util.List;
+
+import com.infy.carpooling.entity.RideBooking;
+
+import lombok.Data;
+
+@Data
+public class RideOfferDTO {
+    private String rideId;
+    private String destination;
+    private String pickup;
     private LocalDate date;
     private Time time;
-    private Boolean pets = false;
-    private Boolean music = false;
-    
-    @Column(name = "is_ride_completed")
-    private Boolean isRideCompleted = false;
-    
-    @ManyToOne
-    @JoinColumn(name = "driver_id", referencedColumnName = "driverId")
-    @JsonBackReference(value = "driver-rideOffers")
-    private Driver driver;
-    
-    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference(value = "ride-stops")
-    @OrderBy("sequence ASC")
-    private List<RideStop> stops = new ArrayList<>();
-    
-    @OneToMany(mappedBy = "rideOffer", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference(value = "ride-bookings")
-    private List<RideBooking> bookings = new ArrayList<>();
-    
-    // ... other existing fields and methods ...
-    
-    public String getStartPoint() {
-        return stops.isEmpty() ? null : stops.get(0).getLocation();
-    }
-    
-    public String getEndPoint() {
-        return stops.isEmpty() ? null : stops.get(stops.size()-1).getLocation();
-    }
-}
-```
+    private BigDecimal price;
+    private int availableSeats;
+    private String driverId;  // Only store the driverId, not the entire driver object
+    private List<RideBookingDTO> bookings;  // Only expose necessary fields for bookings
+	private Boolean music;
+	private Boolean pets;
 
-### RideStop.java (new)
-```java
+    // Constructors, getters, setters
+	public RideOfferDTO(String rideId, String destination, String pickup, LocalDate date, Time time,
+			BigDecimal price, int availableSeats, Boolean music, Boolean pets, String driverId2) {
+		// TODO Auto-generated constructor stub
+		this.rideId=rideId;
+		this.destination=destination;
+		this.pickup=pickup;
+		this.date=date;
+		this.time=time;
+		this.price=price;
+		this.availableSeats=availableSeats;
+		this.music=music;
+		this.pets=pets;
+		this.driverId=driverId2;
+	}
+	
+
+    // getters and setters
+}package com.infy.carpooling.dto;
+
+import java.sql.Timestamp;
+import java.util.Optional;
+
+import com.infy.carpooling.entity.Gender;
+
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class UpdateDetailsDTO {
+
+    @Size(max = 50, message = "Name must be at most 50 characters")
+    private String name;
+
+    @Pattern(regexp = "^[0-9]{1,2}$", message = "Age must be a valid number between 0 and 99")
+    private String age;
+
+    private Gender gender;
+
+    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Phone number must be valid")
+    private String phone;
+
+    @Pattern(regexp = "^(true|false)?$", message = "isBlocked must be either 'true' or 'false'")
+    private String isBlocked;
+
+    private byte[] photo;
+
+    // Optional time ranges - no validation here unless converted to custom logic
+    private Optional<String> upiId = Optional.empty();
+    private Optional<Timestamp> availableTimeFrom = Optional.empty();
+    private Optional<Timestamp> availableTimeTo = Optional.empty();
+}
+package com.infy.carpooling.dto;
+
+import lombok.Data;
+
+@Data
+public class UserDTO {
+	private String id;
+	  private String email;
+	  private String password;
+	  private boolean verified=false;
+	  private String verificationToken;
+}
+package com.infy.carpooling.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class VehicleDetailsDTO {
+
+    @NotBlank(message = "Make cannot be empty")
+    @Size(max = 50, message = "Make should not exceed 50 characters")
+    private String make;
+
+    @NotBlank(message = "Model cannot be empty")
+    @Size(max = 50, message = "Model should not exceed 50 characters")
+    private String model;
+
+    @NotBlank(message = "Car number cannot be empty")
+    @Pattern(regexp = "^[A-Z0-9]{1,15}$", message = "Car number should be alphanumeric and at most 15 characters")
+    private String carNumber;
+
+    @NotBlank(message = "License number cannot be empty")
+    @Pattern(regexp = "^[A-Z0-9]{1,15}$", message = "License number should be alphanumeric and at most 15 characters")
+    private String licenseNumber;
+
+    private byte[] licenseDoc;  // Assuming it's optional. If not, you can use @NotNull if needed.
+}
+ 
+
+
+
+package com.infy.carpooling.entity;
+
+import java.sql.Timestamp;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.Data;
+
 @Entity
 @Data
-@Table(name = "ridestops")
-public class RideStop {
+@Table(name = "drivers")
+public class Driver {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String driverId;
+    @Column(nullable = false, unique = true)
+    private String email;
+    @Column(nullable = false)
+    private String password;
+    private String name;
+    private String age;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+    private String phone;
     
+    @Lob
+    @Column(name="photo",columnDefinition="LONGBLOB")
+    private byte[] photo;
+    private Timestamp availableTimeFrom;
+    private Timestamp availableTimeTo;
+    @Column(name = "upi_id")
+    private String upiId;
+    private String verificationToken;
+    private boolean isVerified = false;
+    private Boolean isBlocked = false;
+    @OneToOne(mappedBy = "driver", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "driver-vehicleDetails")
+    private VehicleDetails vehicleDetails;
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "driver-rideOffers")
+    private List<RideOffer> rideOffers;
+    @OneToMany(mappedBy = "reviewer", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "driver-reviews-given")
+    private List<RatingsFromDriver> reviewsGiven;
+    @OneToMany(mappedBy = "reviewee", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "driver-reviews-received")
+    private List<RatingsFromPassenger> reviewsReceived;
+    
+//    private byte[] photo;
+}package com.infy.carpooling.entity;
+
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Data;
+
+@Entity
+@Data
+@Table(name = "passengers")
+public class Passenger {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String passengerId;
+    @Column(nullable = false, unique = true)
+    private String email;
+    @Column(nullable = false)
+    private String password;
+    private String verificationToken;
+    private boolean isVerified = false;
+    private String name;
+    private String age;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+    private String phone;
+    private Boolean isBlocked = false;
+    @OneToMany(mappedBy = "passenger", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "passenger-bookings")
+    private List<RideBooking> bookings;
+    @OneToMany(mappedBy = "reviewer", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "passenger-reviews-given")
+    private List<RatingsFromPassenger> reviewsGiven;
+    @OneToMany(mappedBy = "reviewee", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "passenger-reviews-received")
+    private List<RatingsFromDriver> reviewsReceived;
+	@Lob
+	@Column(name = "photo", columnDefinition = "LONGBLOB")
+	private byte[]photo;
+}package com.infy.carpooling.entity;
+
+import lombok.Data;
+
+@Data
+public class PassengerLogin {
+   private String email;
+   private String password;
+}
+@Entity
+@Data
+@Table(name = "ratingsfromdriver")
+public class RatingsFromDriver {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String ratingId;
+    @ManyToOne
+    @JoinColumn(name = "reviewer_id")
+    @JsonBackReference(value = "driver-reviews-given")
+    private Driver reviewer;
+    @ManyToOne
+    @JoinColumn(name = "reviewee_id")
+    @JsonBackReference(value = "passenger-reviews-received")
+    private Passenger reviewee;
     @ManyToOne
     @JoinColumn(name = "ride_id")
-    @JsonBackReference
+    @JsonBackReference(value = "ride-driver-ratings")
     private RideOffer ride;
-    
-    private String location;
-    private int sequence;
-    private BigDecimal priceFromStart; // cumulative price from the first stop
-}
-```
-
-### RideBooking.java (updated)
-```java
-@Entity
+    private int rating;
+    private String feedback;
+    private LocalDateTime createdAt;
+}@Entity
+@Data
+@Table(name = "ratingsfrompassenger")
+public class RatingsFromPassenger {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String ratingId;
+    @ManyToOne
+    @JoinColumn(name = "reviewer_id")
+    @JsonBackReference(value = "passenger-reviews-given")
+    private Passenger reviewer;
+    @ManyToOne
+    @JoinColumn(name = "reviewee_id")
+    @JsonBackReference(value = "driver-reviews-received")
+    private Driver reviewee;
+    @ManyToOne
+    @JoinColumn(name = "ride_id")
+    @JsonBackReference(value = "ride-passenger-ratings")
+    private RideOffer ride;
+    private int rating;
+    private String feedback;
+    private LocalDateTime createdAt ;
+}@Entity
 @Data
 @Table(name = "ridebookings")
 public class RideBooking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String bookingId;
-    
     @ManyToOne
     @JoinColumn(name = "ride_id")
     @JsonBackReference(value = "ride-bookings")
+//    @JsonIgnore
     private RideOffer rideOffer;
-    
     @ManyToOne
     @JoinColumn(name = "passenger_id")
     @JsonBackReference(value = "passenger-bookings")
     private Passenger passenger;
-    
     private int seatsBooked;
+//    private Timestamp bookingTime=new Timestamp(System.currentTimeMillis());
     private Boolean pets;
-    private Boolean music;
-    private Boolean isAccepted = false;
-    private String paymentMode = "cash";
-    private Boolean isPaymentCompleted = false;
-    private Timestamp responseTime;
-    
-    // Track which segment was booked
-    private String startStop;
-    private String endStop;
-    private BigDecimal price;
-}
-```
-
-## 2. Updated DTOs
-
-### DriverOfferedRideDTO.java (updated)
-```java
+	private Boolean music;
+	private Boolean isAccepted = false;
+	
+	private String paymentMode = "cash";
+	private Boolean isPaymentCompleted = false;
+	private Timestamp responseTime;
+	
+}@Entity
 @Data
-public class DriverOfferedRideDTO {
-    @NotNull(message = "Date is required")
-    private LocalDate date;
-    
-    @NotNull(message = "Time is required")
-    private Time time;
-    
-    @Min(value = 1, message = "There must be at least one available seat")
+@Table(name = "rideoffers")
+public class RideOffer {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String rideId;
+    private String destination;
+    @Column(name = "available_seats")
     private int availableSeats;
     
-    private Boolean music;
-    private Boolean pets;
+    private LocalDate date;
+    private Time time;
+    private String pickup;
+    private Boolean pets = false;
+    private Boolean music = false;
+    @Column(name = "is_ride_completed")
+    private Boolean isRideCompleted=false;
+    private BigDecimal price;
+    @ManyToOne
+    @JoinColumn(name = "driver_id", referencedColumnName = "driverId")
+    @JsonBackReference(value = "driver-rideOffers")
+    private Driver driver;
+    @OneToMany(mappedBy = "rideOffer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "ride-bookings")
+    private List<RideBooking> bookings = new ArrayList<>();
+    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "ride-passenger-ratings")
+    private List<RatingsFromPassenger> passengerRatings;
+    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL)
+    @JsonManagedReference(value = "ride-driver-ratings")
+    private List<RatingsFromDriver> driverRatings;
     
-    @NotEmpty(message = "At least two stops are required")
-    private List<String> stops;
-    
-    @NotEmpty(message = "Pricing information is required")
-    private Map<String, BigDecimal> segmentPrices; // Map of "startStop-endStop" to price
-    
-    // Helper method to validate stops and prices
-    public boolean isValidRoute() {
-        if (stops == null || stops.size() < 2) return false;
-        if (segmentPrices == null) return false;
-        
-        // Check all possible segments have prices
-        for (int i = 0; i < stops.size() - 1; i++) {
-            for (int j = i + 1; j < stops.size(); j++) {
-                String key = stops.get(i) + "-" + stops.get(j);
-                if (!segmentPrices.containsKey(key)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-}
-```
+    @OneToMany(mappedBy = "rideOffer", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<RideSegment> segments = new ArrayList<>();
 
-### BookRequestDTO.java (updated)
-```java
+}
+@Entity
 @Data
-public class BookRequestDTO {
-    @Min(value = 1, message = "At least one seat must be booked")
-    private int reqSeats;
-    
-    private Boolean pets;
-    private Boolean music;
-    
-    @NotBlank(message = "Start stop is required")
-    private String startStop;
-    
-    @NotBlank(message = "End stop is required")
-    private String endStop;
+@Table(name = "ride_segments")
+public class RideSegment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long segmentId;
+
+    private String fromLocation;
+    private String toLocation;
+
+    private int availableSeats;
+
+    @ManyToOne
+    @JoinColumn(name = "ride_id")
+    @JsonBackReference
+    private RideOffer rideOffer;
+}@Entity
+@Data
+@Table(name = "vehicledetails")
+public class VehicleDetails {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private String vehicleId;
+	
+	@OneToOne
+	@JoinColumn(name = "driver_id", referencedColumnName = "driverId")
+	@JsonBackReference
+	private Driver driver;
+
+	
+	private String make;
+	private String model;
+	private String carNumber;
+	private String licenseNumber;
+	
+	@Lob
+    @Column(name="photo",columnDefinition="LONGBLOB")// Explicitly map to the correct column name
+	private byte[] lisenceDoc;
+
+	private Boolean isVerified = false;
+	
 }
-```
 
-## 3. Updated Services
 
-### RideOfferServiceImpl.java (updated)
-```java
-@Service
-@Transactional
-public class RideOfferServiceImpl {
-    // ... existing autowired fields ...
+
+package com.infy.carpooling.repository;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.infy.carpooling.entity.Admin;
+import com.infy.carpooling.entity.Driver;
+
+public interface DriverRepository extends JpaRepository<Driver,String>{
+
+	Optional<Driver> findByEmail(String email);
+
+	Optional<Driver> findByVerificationToken(String tocken);
+
+	boolean existsByEmail(String email);
+
+	Optional<Driver> findByDriverId(String userId);
+
+}public interface PassengerRepository extends JpaRepository<Passenger,String> {
+
+	Optional<Passenger> findByEmail(String email);
+
+	Optional<Passenger> findByVerificationToken(String tocken);
+
+	boolean existsByEmail(String email);
+
+	Optional<Passenger> findByPassengerId(String pid);
+
+}public interface RideBookingRepository extends JpaRepository<RideBooking,String>{
+	@Query("SELECT b FROM RideBooking b WHERE b.rideOffer.rideId = :rideId")
+	List<RideBooking> findByRideId(@Param("rideId") String rideId);
+	
+	List<RideBooking> findByRideOffer_RideIdAndIsAcceptedTrue(String rideId);
+	
+	@Query("SELECT CASE WHEN COUNT(rb) > 0 THEN true ELSE false END " +
+		       "FROM RideBooking rb WHERE rb.rideOffer.id = :rideOfferId AND rb.passenger.id = :passengerId")
+		boolean hasPassengerAlreadyBookedRide(@Param("rideOfferId") String rideOfferId,
+		                                      @Param("passengerId") String passengerId);
+
+
+}
+public interface RideOfferRepository extends JpaRepository<RideOffer, String> {
+
+	
+	Optional<RideOffer> findByRideId(String rideId);
+	//@Query("SELECT r FROM RideOffer r WHERE r.pickup = :pickup AND r.destination = :destination AND r.date = :date AND r.isRideCompleted = false")
+	//List<RideOffer> searchAvailableRides(@Param("pickup") String pickup, @Param("destination") String destination, @Param("date") LocalDate date);
+	List<RideOffer> findByPickupAndDestinationAndDate(String pickup,String destination,LocalDate date);
+	Optional<RideOffer> findByDestination(String des);
+	@Query("SELECT r FROM RideOffer r WHERE r.pickup = :pickup AND r.destination = :destination AND r.date = :date AND r.pets = :pets AND r.music = :music")
+	List<RideOffer> findByPickupAndDestinationAndDateAndMusicAndPets(
+	    @Param("pickup") String pickup,
+	    @Param("destination") String destination,
+	    @Param("date") LocalDate date,
+	    @Param("pets") Boolean pets,
+	    @Param("music") Boolean music 
+	);
+
+
+
+	@Query("SELECT r FROM RideOffer r WHERE r.driver.id = :driverId")
+	List<RideOffer> findByDriverId(@Param("driverId") String driverId);
+	
+}public interface RideSegmentRepository extends JpaRepository<RideSegment, Long> {
+
+    @Query("SELECT s FROM RideSegment s WHERE s.rideOffer.rideId = :rideId AND " +
+           "s.fromLocation IN :segments AND s.toLocation IN :segments")
+    List<RideSegment> findSegmentsForBooking(@Param("rideId") String rideId, 
+                                             @Param("segments") List<String> segments);
+}
+
+@Service 
+public class AuthService {
+	
+	@Autowired 
+	private AdminRepository adminRepo;
+	
+	@Autowired 
+	private DriverRepository driverRepo;
+	
+	@Autowired 
+	private PassengerRepository passengerRepo;
+	
+	@Autowired 
+	private BCryptPasswordEncoder passwordEncoder;
+	
+	@Autowired 
+	private JwtUtil jwtUtil;
+	
+	public SignInResponseDTO signIn(String email, String password, String role) {
+		System.out.println("Signin in user " + email);
+		switch (role) {
+		case "Passenger": {
+			if (passengerRepo.existsByEmail(email)) {
+				System.out.println("PassengerEmail found");
+		        Passenger p = passengerRepo.findByEmail(email).orElseThrow();
+		
+		            String token = jwtUtil.generateToken(p.getPassengerId().toString(), "PASSENGER");
+		            return new SignInResponseDTO(p.getEmail(), "Passenger", "/passenger/dashboard", token);
+		
+		    
+		
+		    }
+			throw new InvalidCredentialsException();
+		}
+		case "Driver": {
+			if (driverRepo.existsByEmail(email)) {
+				System.out.println("Driver Email found");
+		        Driver d = driverRepo.findByEmail(email).orElseThrow();
+				        	
+		            String token = jwtUtil.generateToken(d.getDriverId().toString(), "DRIVER");
+		
+		            return new SignInResponseDTO(d.getEmail(), "Driver", "/driver/dashboard", token);
+
+		    }
+			throw new InvalidCredentialsException();
+		}
+		case "Admin": {
+			if (adminRepo.existsByEmail(email)) {
+				System.out.println("Driver Email found");
+		        Admin a = adminRepo.findByEmail(email).orElseThrow();
+		
+		            String token = jwtUtil.generateToken(a.getAdminId().toString(), "ADMIN");
+		
+		            return new SignInResponseDTO(a.getEmail(), "Admin", "/admin/dashboard", token);
+		     }
+			throw new InvalidCredentialsException();
+		}
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + role);
+		}
+	
+	}
+
+}@Autowired
+private JwtUtil jwtUtil;
+
+public String addDetails(UpdateDetailsDTO dto,HttpServletRequest request) {
+	
+	String authHeader = request.getHeader("Authorization");
+	if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+		throw new RuntimeException("Missing or Invalid Authorisation header");
+	}
+
+    String token = authHeader.substring(7);
+
+    String userId = jwtUtil.extractUserId(token);
+
+    String role = jwtUtil.extractUserRole(token).toLowerCase();
     
-    public String offerRide(DriverOfferedRideDTO dto, HttpServletRequest request) throws CarpoolingException {
-        // Validate the route
-        if (!dto.isValidRoute()) {
-            throw new CarpoolingException("Invalid route configuration. All segments must have prices.");
-        }
-        
+    System.out.print(userId);
+    System.out.print(role);
+    
+    switch (role) {
+	    case "admin":{
+	    	Admin a = adminRepo.findByAdminId(userId).orElseThrow();
+	    	a.setName(dto.getName());
+		    a.setAge(dto.getAge());
+		    a.setGender(dto.getGender());
+		    a.setPhone(dto.getPhone());
+		    a.setPhoto(dto.getPhoto());
+		    a  = adminRepo.save(a);
+		    return("Added details for Admin ID: "+ a.getAdminId());
+	    }
+		case "passenger":{
+			Passenger p = passengerRepo.findByPassengerId(userId).orElseThrow();
+		    p.setName(dto.getName());
+		    p.setAge(dto.getAge());
+		    p.setGender(dto.getGender());
+		    p.setPhone(dto.getPhone());
+		    p.setPhoto(dto.getPhoto());
+		    p = passengerRepo.save(p);
+		    return("Added details for Passenger ID: "+ p.getPassengerId());
+		}
+		case "driver":{
+			Driver d = driverRepo.findByDriverId(userId).orElseThrow();
+			d.setName(dto.getName());
+		    d.setAge(dto.getAge());
+		    d.setGender(dto.getGender());
+		    d.setPhone(dto.getPhone());
+		    d.setPhoto(dto.getPhoto());
+		    d.setAvailableTimeFrom(dto.getAvailableTimeFrom().get());
+		    d.setAvailableTimeTo(dto.getAvailableTimeTo().get());
+		    d = driverRepo.save(d);
+		    return("Added details for Driver ID: "+ d.getDriverId());
+		}
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + role);
+		}
+	}
+
+	public String updateDetails(UpdateDetailsDTO dto, HttpServletRequest request) {
+		String authHeader = request.getHeader("Authorization");
+		if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+			throw new RuntimeException("Missing or Invalid Authorisation header");
+		}
+
+	    String token = authHeader.substring(7);
+
+	    String userId = jwtUtil.extractUserId(token);
+
+	    String role = jwtUtil.extractUserRole(token).toLowerCase();
+	    
+	    System.out.print(userId);
+	    System.out.print(role);
+	    
+	    switch (role) {
+	    case "admin":{
+	    	Admin a = adminRepo.findByAdminId(userId).orElseThrow();
+	    	if(dto.getName() != null) a.setName(dto.getName());
+	    	if(dto.getAge() != null) a.setAge(dto.getAge());
+	    	if(dto.getGender() != null) a.setGender(dto.getGender());
+	    	if(dto.getPhone() != null) a.setPhone(dto.getPhone());
+	    	if(dto.getPhoto() != null) a.setPhoto(dto.getPhoto());
+	    	a  = adminRepo.save(a);
+		    return("Updated details for Admin ID: "+ a.getAdminId());
+	    }
+		case "passenger":{
+			Passenger p = passengerRepo.findByPassengerId(userId).orElseThrow();
+			if(dto.getName() != null) p.setName(dto.getName());
+	    	if(dto.getAge() != null) p.setAge(dto.getAge());
+	    	if(dto.getGender() != null) p.setGender(dto.getGender());
+	    	if(dto.getPhone() != null) p.setPhone(dto.getPhone());
+	    	if(dto.getPhoto() != null) p.setPhoto(dto.getPhoto());
+		    p = passengerRepo.save(p);
+		    return("Updated details for Passenger ID: "+ p.getPassengerId());
+		}
+		case "driver":{
+			Driver d = driverRepo.findByDriverId(userId).orElseThrow();
+			if(dto.getName() != null) d.setName(dto.getName());
+	    	if(dto.getAge() != null) d.setAge(dto.getAge());
+	    	if(dto.getGender() != null) d.setGender(dto.getGender());
+	    	if(dto.getPhone() != null) d.setPhone(dto.getPhone());
+	    	if(dto.getPhoto() != null) d.setPhoto(dto.getPhoto());
+	    	if(d.getAvailableTimeFrom() != null) d.setAvailableTimeFrom(dto.getAvailableTimeFrom().get());
+	    	if(d.getAvailableTimeTo() != null) d.setAvailableTimeTo(dto.getAvailableTimeTo().get());
+	    	if(d.getUpiId() != null) d.setUpiId(dto.getUpiId().get());
+		    d = driverRepo.save(d);
+		    return("Updated details for Driver ID: "+ d.getDriverId());
+		}
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + role);
+		}
+	    
+	}
+
+}@Service
+public class PassengerServiceImpl {
+
+    @Autowired
+    private PassengerRepository passengerRepository;
+    @Autowired
+    private RideOfferRepository rideOfferRepository;
+    @Autowired
+
+    private JwtUtil jwtUtil;
+
+    private String extractUserId(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new RuntimeException("Missing or Invalid Authorisation header");
+            throw new UnauthorizedAccessException("Missing or Invalid Authorization header");
         }
-        
         String token = authHeader.substring(7);
-        String userId = jwtUtil.extractUserId(token);
-        
-        RideOffer offer = new RideOffer();
-        Driver driver = driverRepo.findByDriverId(userId)
-                .orElseThrow(() -> new CarpoolingException("Driver not found for Id: " + userId));
-        
-        offer.setDate(dto.getDate());
-        offer.setTime(dto.getTime());
-        offer.setAvailableSeats(dto.getAvailableSeats());
-        offer.setMusic(dto.getMusic());
-        offer.setPets(dto.getPets());
-        offer.setDriver(driver);
-        
-        // Create stops with cumulative prices
-        BigDecimal cumulativePrice = BigDecimal.ZERO;
-        for (int i = 0; i < dto.getStops().size(); i++) {
-            RideStop stop = new RideStop();
-            stop.setLocation(dto.getStops().get(i));
-            stop.setSequence(i);
-            
-            if (i == 0) {
-                stop.setPriceFromStart(BigDecimal.ZERO);
-            } else {
-                String prevStop = dto.getStops().get(i-1);
-                String currentStop = dto.getStops().get(i);
-                BigDecimal segmentPrice = dto.getSegmentPrices().get(prevStop + "-" + currentStop);
-                cumulativePrice = cumulativePrice.add(segmentPrice);
-                stop.setPriceFromStart(cumulativePrice);
-            }
-            
-            stop.setRide(offer);
-            offer.getStops().add(stop);
-        }
-        
-        return "Ride Offered successfully with RideId " + rideOfferRepo.save(offer).getRideId();
+        return jwtUtil.extractUserId(token);
+    }
+
+    public Passenger getPassengerDetails(HttpServletRequest request) {
+        String userId = extractUserId(request);
+        return passengerRepository.findByPassengerId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Passenger not found with ID: " + userId));
     }
     
-    // ... other existing methods ...
-}
-```
+    public List<RideOfferDTO> searchRides(String pickup,String destination,LocalDate date, Boolean pets, Boolean music) throws CarpoolingException{
+        List<RideOffer> rideOffers = rideOfferRepository.findByPickupAndDestinationAndDateAndMusicAndPets(pickup, destination, date,pets,music);
+        List<RideOfferDTO> rideOfferDTOs = rideOffers.stream()
+        		.map(rideOffer -> {
+            // Map RideOffer to RideOfferDTO
+        		String driverId = rideOffer.getDriver().getDriverId();  // Only store the driver ID
+            
+	      		RideOfferDTO rideOfferDTO = new RideOfferDTO(
+  				    rideOffer.getRideId(),
+  				    rideOffer.getDestination(),
+  				    rideOffer.getPickup(),
+  				    rideOffer.getDate(),
+  				    rideOffer.getTime(),
+  				    rideOffer.getPrice(),
+  				    rideOffer.getAvailableSeats(),
+  				   
+  				    rideOffer.getMusic(),
+  				    rideOffer.getPets(),
+  				    driverId
+  				);
+          		List<RideBookingDTO> bookingDTOs = rideOffer.getBookings().stream().map(rideBooking -> {
+                    return new RideBookingDTO(
+                        rideBooking.getBookingId(),
+                        rideBooking.getPassenger().getPassengerId(), // Store passengerId instead of whole Passenger object
+                        rideBooking.getSeatsBooked()
+                    );
+                }).collect(Collectors.toList());
 
-### RideBookingServiceImpl.java (updated)
-```java
+                rideOfferDTO.setBookings(bookingDTOs);
+
+                return rideOfferDTO;
+            }).collect(Collectors.toList());
+        if(rideOfferDTOs.isEmpty()) {
+        	throw new CarpoolingException("No rides Available for your search request");
+        }
+        return rideOfferDTOs;
+        
+    }
+
+    public List<RideBooking> getPassengerPastRidesByDes(HttpServletRequest request, String des) {
+        String id = extractUserId(request);
+        Passenger passenger = passengerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Passenger not found: " + id));
+
+        return passenger.getBookings().stream()
+                .filter(ride -> ride.getRideOffer().getDestination().equalsIgnoreCase(des) && ride.getIsPaymentCompleted())
+                .collect(Collectors.toList());
+    }
+
+    public List<RideBooking> getPassengerPastRidesByDate(HttpServletRequest request, LocalDate date) {
+        String id = extractUserId(request);
+        Passenger passenger = passengerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Passenger not found: " + id));
+
+        return passenger.getBookings().stream()
+                .filter(book -> book.getRideOffer().getDate().isEqual(date) && book.getIsAccepted() && book.getIsPaymentCompleted())
+                .collect(Collectors.toList());
+    }
+
+    public List<RideBookingResponseDTO> getPassengerPastRides(HttpServletRequest request) {
+        String id = extractUserId(request);
+        Passenger passenger = passengerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Passenger not found: " + id));
+
+        return passenger.getBookings().stream()
+                .filter(book -> book.getRideOffer().getDate().isBefore(LocalDate.now()) && book.getIsAccepted() 
+                		&& book.getIsPaymentCompleted())
+                .map(book -> new RideBookingResponseDTO(
+                			book.getBookingId(),
+                			book.getPets(),
+                			book.getMusic(),
+                			book.getIsAccepted(),
+                			book.getIsPaymentCompleted(),
+                			book.getPaymentMode(),
+                			book.getResponseTime(),
+                			book.getRideOffer().getRideId(),
+                			book.getRideOffer().getDriver().getDriverId()
+                		))
+                .collect(Collectors.toList());
+    }
+
+    public List<RideBooking> getBookings(HttpServletRequest request) {
+        String id = extractUserId(request);
+        Passenger passenger = passengerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Passenger not found: " + id));
+
+        return passenger.getBookings().stream()
+                .filter(book -> book.getRideOffer().getDate().isAfter(LocalDate.now()))
+                .collect(Collectors.toList());
+    }
+}
 @Service
 public class RideBookingServiceImpl {
-    // ... existing autowired fields ...
+
+    @Autowired private RideBookingRepository rideBookingRepository;
+    @Autowired private RideOfferRepository rideOfferRepository;
+    @Autowired private PassengerRepository passengerRepository;
+    @Autowired JwtUtil jwtUtil;
+
+    private String extractUserId(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new UnauthorizedAccessException("Missing or Invalid Authorization header");
+        }
+        String token = authHeader.substring(7);
+        return jwtUtil.extractUserId(token);
+    }
     
+    @Autowired
+    private RideSegmentRepository rideSegmentRepository;
+
+    public RideBooking bookSegmentRide(String rideId, String from, String to, int seats, HttpServletRequest request) {
+        String passengerId = jwtUtil.extractUserId(request.getHeader("Authorization").substring(7));
+
+        RideOffer ride = rideOfferRepository.findById(rideId)
+            .orElseThrow(() -> new ResourceNotFoundException("Ride not found"));
+
+        Passenger passenger = passengerRepository.findById(passengerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Passenger not found"));
+
+        List<RideSegment> segments = getSegmentRange(ride, from, to);
+
+        for (RideSegment segment : segments) {
+            if (segment.getAvailableSeats() < seats) {
+                throw new IllegalStateException("Not enough seats in segment: " + segment.getFromLocation() + " to " + segment.getToLocation());
+            }
+        }
+
+        for (RideSegment segment : segments) {
+            segment.setAvailableSeats(segment.getAvailableSeats() - seats);
+        }
+
+        RideBooking booking = new RideBooking();
+        booking.setPassenger(passenger);
+        booking.setRideOffer(ride);
+        booking.setSeatsBooked(seats);
+        booking.setIsAccepted(false);
+        booking.setIsPaymentCompleted(false);
+        booking.setResponseTime(new Timestamp(System.currentTimeMillis()));
+
+        rideBookingRepository.save(booking);
+        rideSegmentRepository.saveAll(segments);
+        return booking;
+    }
+
+    private List<RideSegment> getSegmentRange(RideOffer ride, String from, String to) {
+        List<RideSegment> allSegments = ride.getSegments();
+        List<RideSegment> bookingSegments = new ArrayList<>();
+        boolean start = false;
+
+        for (RideSegment segment : allSegments) {
+            if (segment.getFromLocation().equals(from)) start = true;
+            if (start) bookingSegments.add(segment);
+            if (segment.getToLocation().equals(to)) break;
+        }
+
+        if (bookingSegments.isEmpty() || !bookingSegments.get(bookingSegments.size() - 1).getToLocation().equals(to)) {
+            throw new IllegalArgumentException("Invalid from/to locations");
+        }
+
+        return bookingSegments;
+    }
+
+
     public RideBooking bookRide(String rideOfferId, HttpServletRequest request, BookRequestDTO bookingdto) {
         String id = extractUserId(request);
         boolean alreadyBooked = rideBookingRepository.hasPassengerAlreadyBookedRide(rideOfferId, id);
         if (alreadyBooked) {
             throw new IllegalStateException("Passenger has already booked this ride.");
         }
+      
         
         Passenger passenger = passengerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Passenger not found: " + id));
         RideOffer ride = rideOfferRepository.findById(rideOfferId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ride not found with ID: " + rideOfferId));
-        
+
         if (ride.getAvailableSeats() < bookingdto.getReqSeats()) {
             throw new IllegalStateException("Not enough available seats");
         }
-        
-        // Validate the requested segment exists in the ride
-        Optional<RideStop> startStopOpt = ride.getStops().stream()
-                .filter(s -> s.getLocation().equalsIgnoreCase(bookingdto.getStartStop()))
-                .findFirst();
-        
-        Optional<RideStop> endStopOpt = ride.getStops().stream()
-                .filter(s -> s.getLocation().equalsIgnoreCase(bookingdto.getEndStop()))
-                .findFirst();
-        
-        if (!startStopOpt.isPresent() || !endStopOpt.isPresent()) {
-            throw new IllegalStateException("Invalid start or end stop for this ride");
-        }
-        
-        RideStop startStop = startStopOpt.get();
-        RideStop endStop = endStopOpt.get();
-        
-        if (startStop.getSequence() >= endStop.getSequence()) {
-            throw new IllegalStateException("End stop must come after start stop");
-        }
-        
-        // Calculate price for the segment
-        BigDecimal price = endStop.getPriceFromStart().subtract(startStop.getPriceFromStart());
-        
+
         RideBooking booking = new RideBooking();
         booking.setPassenger(passenger);
         booking.setRideOffer(ride);
@@ -285,159 +1128,266 @@ public class RideBookingServiceImpl {
         booking.setIsPaymentCompleted(false);
         booking.setResponseTime(new Timestamp(System.currentTimeMillis()));
         booking.setSeatsBooked(bookingdto.getReqSeats());
-        booking.setStartStop(startStop.getLocation());
-        booking.setEndStop(endStop.getLocation());
-        booking.setPrice(price);
-        
+
         ride.setAvailableSeats(ride.getAvailableSeats() - bookingdto.getReqSeats());
         rideOfferRepository.save(ride);
-        
+
         return rideBookingRepository.save(booking);
     }
-    
-    // ... other existing methods ...
-}
-```
 
-## 4. Updated Controllers
+    public void cancelBooking(String bookingId, String passengerId) {
+        RideBooking booking = rideBookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
-### RideController.java (updated)
-```java
-@RestController
-@RequestMapping("/api/rides")
-public class RideController {
-    
-    @GetMapping("/passenger/rides/search")
-    public ResponseEntity<List<RideOfferDTO>> searchRides(
-            @RequestParam String pickup,
-            @RequestParam String destination,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
-            @RequestParam(required = false) Boolean pets,
-            @RequestParam(required = false) Boolean music) throws CarpoolingException {
-        
-        List<RideOffer> matchingRides = rideOfferRepository.findByDate(date);
-        
-        List<RideOfferDTO> result = matchingRides.stream()
-            .filter(ride -> {
-                // Check if the ride has the requested segment
-                boolean hasPickup = false;
-                boolean hasDestination = false;
-                boolean pickupBeforeDestination = false;
-                
-                for (RideStop stop : ride.getStops()) {
-                    if (stop.getLocation().equalsIgnoreCase(pickup)) {
-                        hasPickup = true;
-                    }
-                    if (hasPickup && stop.getLocation().equalsIgnoreCase(destination)) {
-                        hasDestination = true;
-                        pickupBeforeDestination = true;
-                        break;
-                    }
-                }
-                
-                // Filter by preferences if provided
-                boolean matchesPreferences = true;
-                if (pets != null) {
-                    matchesPreferences = matchesPreferences && ride.getPets().equals(pets);
-                }
-                if (music != null) {
-                    matchesPreferences = matchesPreferences && ride.getMusic().equals(music);
-                }
-                
-                return pickupBeforeDestination && matchesPreferences;
-            })
-            .map(ride -> {
-                // Find the price for the requested segment
-                BigDecimal segmentPrice = calculateSegmentPrice(ride, pickup, destination);
-                
-                RideOfferDTO dto = new RideOfferDTO();
-                dto.setRideId(ride.getRideId());
-                dto.setStartPoint(pickup);
-                dto.setEndPoint(destination);
-                dto.setDate(ride.getDate());
-                dto.setTime(ride.getTime());
-                dto.setPrice(segmentPrice);
-                dto.setAvailableSeats(ride.getAvailableSeats());
-                dto.setMusic(ride.getMusic());
-                dto.setPets(ride.getPets());
-                dto.setDriverId(ride.getDriver().getDriverId());
-                
-                return dto;
-            })
-            .collect(Collectors.toList());
-        
-        if (result.isEmpty()) {
-            throw new CarpoolingException("No rides available for your search request");
+        if (!booking.getPassenger().getPassengerId().equals(passengerId)) {
+            throw new UnauthorizedAccessException("Unauthorized cancellation attempt");
         }
-        
-        return ResponseEntity.ok(result);
+
+        RideOffer ride = booking.getRideOffer();
+        ride.setAvailableSeats(ride.getAvailableSeats() + booking.getSeatsBooked());
+
+        rideOfferRepository.save(ride);
+        rideBookingRepository.delete(booking);
     }
-    
-    private BigDecimal calculateSegmentPrice(RideOffer ride, String pickup, String destination) {
-        Optional<RideStop> startStop = ride.getStops().stream()
-                .filter(s -> s.getLocation().equalsIgnoreCase(pickup))
-                .findFirst();
+}
+@Service
+@Transactional
+public class RideOfferServiceImpl {
+	@Autowired
+	private RideOfferRepository rideOfferRepo;
+	@Autowired
+	private RideBookingRepository rideBookingRepository;
+	@Autowired
+	private DriverRepository driverRepo;
+	@Autowired
+	private JwtUtil jwtUtil;
+	
+	public String offerRide(DriverOfferedRideDTO dto, HttpServletRequest request) throws CarpoolingException {
+	    String userId = jwtUtil.extractUserId(request.getHeader("Authorization").substring(7));
+
+	    Driver driver = driverRepo.findByDriverId(userId)
+	            .orElseThrow(() -> new CarpoolingException("Driver not found for Id: " + userId));
+
+	    RideOffer offer = new RideOffer();
+	    offer.setDate(dto.getDate());
+	    offer.setTime(dto.getTime());
+	    offer.setPrice(dto.getPrice());
+	    offer.setAvailableSeats(dto.getAvailableSeats());
+	    offer.setMusic(dto.getMusic());
+	    offer.setPets(dto.getPets());
+	    offer.setDriver(driver);
+
+	    rideOfferRepo.save(offer);
+
+	    // Create segments
+	    List<RideSegment> stops = dto.getStops();
+	    for (int i = 0; i < stops.size() - 1; i++) {
+	        RideSegment segment = stops.get(i);
+	        segment.setRideOffer(offer);
+	        offer.getSegments().add(segment);
+	    }
+
+	    rideOfferRepo.save(offer);
+	    return "Ride offered successfully with Ride ID: " + offer.getRideId();
+	}
+
+
+	public RideOffer getOfferedRideDetails(String rideId) throws CarpoolingException {
+		// TODO Auto-generated method stub
+		
+		RideOffer rideOffer = rideOfferRepo.findByRideId(rideId)
+				.orElseThrow(() -> new CarpoolingException("Ride not found with RIDE ID: " + rideId));
+		return rideOffer;
+	}
+
+
+	
+	public void completeRide(String rideId) throws CarpoolingException {
+		RideOffer rideOffer = rideOfferRepo.findByRideId(rideId).orElseThrow(() -> new CarpoolingException("Ride not found for Id: " + rideId));
+		rideOffer.setIsRideCompleted(true);
+		List<RideBooking> bookings = rideBookingRepository.findByRideId(rideId);
+		for(RideBooking booking: bookings) {
+			booking.setIsPaymentCompleted(true);
+		}
+		rideOfferRepo.save(rideOffer);
+		rideBookingRepository.saveAll(bookings);
+	}
+	
+		
+	
+}
+@Service(value = "userService")
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private PassengerRepository passengerRepository;
+
+    @Autowired
+    private DriverRepository driverRepository;
+
+    @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
+    private EmailServiceImpl emailServiceImpl;
+
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    @Override
+    public ResponseEntity<String> registeruser(SignUpRequestDTO request) throws CarpoolingException {
+        String role = request.getRole().toLowerCase();
+        String email = request.getEmail();
+        String rawPassword = request.getPassword();
+
         
-        Optional<RideStop> endStop = ride.getStops().stream()
-                .filter(s -> s.getLocation().equalsIgnoreCase(destination))
-                .findFirst();
+
+        String token = UUID.randomUUID().toString();
+        String encryptedPassword = passwordEncoder.encode(rawPassword);
+        String link = "http://192.168.142.178:9090/api/auth/activate?token=" + token;
+        System.out.println("Activation link: " + link);
         
-        if (startStop.isPresent() && endStop.isPresent()) {
-            return endStop.get().getPriceFromStart().subtract(startStop.get().getPriceFromStart());
+        try {
+        	switch (role) {
+
+            case "passenger":
+
+                Optional<Passenger> existingPassenger = passengerRepository.findByEmail(email);
+//                System.out.print(existingPassenger);
+
+                if (existingPassenger.isPresent()) {
+
+                    if (!existingPassenger.get().isVerified()) {
+
+                        return ResponseEntity.ok("Account already exists but not activated. Please check your email.");
+
+                    }
+
+                    return ResponseEntity.ok("Email already registered and verified.");
+
+                }
+
+                Passenger passenger = new Passenger();
+
+                passenger.setEmail(email);
+
+                passenger.setPassword(encryptedPassword);
+
+                passenger.setVerificationToken(token);
+
+                passenger.setVerified(false);
+
+                passengerRepository.save(passenger);
+                passengerRepository.flush();
+
+                break;
+
+            case "driver":
+
+                Optional<Driver> existingDriver = driverRepository.findByEmail(email);
+//                System.out.print(existingDriver);
+                if (existingDriver.isPresent()) {
+                	 System.out.print("chaeck1");
+                    if (!existingDriver.get().isVerified()) {
+                    	System.out.print("chaeck2");
+                        return ResponseEntity.badRequest().body("Account already exists but not activated. Please check your email.");
+
+                    }
+                    System.out.print("chaeck3");
+                    return ResponseEntity.badRequest().body("Email already registered and verified.");
+                    
+
+                }
+
+                Driver driver = new Driver();
+
+                driver.setEmail(email);
+
+                driver.setPassword(encryptedPassword);
+
+                driver.setVerificationToken(token);
+
+                driver.setVerified(false);
+
+                driverRepository.save(driver);
+                driverRepository.flush();
+
+                break;
+
+            case "admin":
+
+                Optional<Admin> existingAdmin = adminRepository.findByEmail(email);
+
+                if (existingAdmin.isPresent()) {
+
+                    if (!existingAdmin.get().isVerified()) {
+
+                        return ResponseEntity.ok("Account already exists but not activated. Please check your email.");
+
+                    }
+
+                    return ResponseEntity.badRequest().body("Email already registered and verified.");
+
+                }
+
+                Admin admin = new Admin();
+
+                admin.setEmail(email);
+
+                admin.setPassword(encryptedPassword);
+
+                admin.setVerificationToken(token);
+
+                admin.setVerified(false);
+
+                adminRepository.save(admin);
+                adminRepository.flush();
+
+                break;
+
+            default:
+
+                return ResponseEntity.badRequest().body("Invalid role");
+
         }
-        
-        return BigDecimal.ZERO;
+        	 System.out.print("chaeck4");
+            emailServiceImpl.sendEmail(email, "Activate your account", "Click to activate: " + link);
+            System.out.print("chaeck5");
+            return ResponseEntity.ok("Check Your Email For Activation");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Registration failed. Please try again later.");
+        }
+    }
+
+    public boolean activateUser(String token) {
+        Optional<Passenger> passengerOpt = passengerRepository.findByVerificationToken(token);
+        if (passengerOpt.isPresent()) {
+            Passenger passenger = passengerOpt.get();
+            passenger.setVerified(true);
+            passenger.setVerificationToken(null);
+            passengerRepository.save(passenger);
+            return true;
+        }
+
+        Optional<Driver> driverOpt = driverRepository.findByVerificationToken(token);
+        if (driverOpt.isPresent()) {
+            Driver driver = driverOpt.get();
+            driver.setVerified(true);
+            driver.setVerificationToken(null);
+            driverRepository.save(driver);
+            return true;
+        }
+
+        Optional<Admin> adminOpt = adminRepository.findByVerificationToken(token);
+        if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
+            admin.setVerified(true);
+            admin.setVerificationToken(null);
+            adminRepository.save(admin);
+            return true;
+        }
+
+        return false;
     }
     
-    @PostMapping("/passenger/rides/book")
-    public ResponseEntity<?> bookRide(HttpServletRequest httpRequest,
-                                    @RequestParam String rideOfferId,
-                                    @RequestBody BookRequestDTO request) {
-        RideBooking booking = rideBookingServiceImpl.bookRide(rideOfferId, httpRequest, request);
-        return ResponseEntity.ok(booking);
-    }
-    
-    @PostMapping("/driver/offerRide")
-    public ResponseEntity<String> offerRide(@RequestBody @Valid DriverOfferedRideDTO dto, 
-                                          HttpServletRequest httpRequest) throws CarpoolingException {
-        String result = rideOfferServiceImpl.offerRide(dto, httpRequest);
-        return ResponseEntity.ok(result);
-    }
 }
-```
-
-## 5. Updated Repository Methods
-
-### RideOfferRepository.java (updated)
-```java
-public interface RideOfferRepository extends JpaRepository<RideOffer, String> {
-    Optional<RideOffer> findByRideId(String rideId);
-    
-    List<RideOffer> findByDate(LocalDate date);
-    
-    @Query("SELECT r FROM RideOffer r JOIN r.stops s WHERE s.location = :location AND r.date = :date")
-    List<RideOffer> findByStopAndDate(@Param("location") String location, 
-                                    @Param("date") LocalDate date);
-    
-    @Query("SELECT r FROM RideOffer r WHERE r.driver.id = :driverId")
-    List<RideOffer> findByDriverId(@Param("driverId") String driverId);
-    
-    @Query("SELECT DISTINCT r FROM RideOffer r JOIN r.stops s1 JOIN r.stops s2 " +
-           "WHERE s1.location = :pickup AND s2.location = :destination " +
-           "AND s1.sequence < s2.sequence AND r.date = :date")
-    List<RideOffer> findRidesWithSegment(@Param("pickup") String pickup,
-                                        @Param("destination") String destination,
-                                        @Param("date") LocalDate date);
-}
-```
-
-## Key Features Implemented:
-
-1. **Multi-Stop Route Definition**: Drivers can now define routes with multiple stops
-2. **Segment Booking**: Passengers can book any segment between two stops
-3. **Dynamic Pricing**: Price is calculated based on the segment booked
-4. **Search Functionality**: Passengers can search for rides that include their desired segment
-5. **Seat Management**: Available seats are properly managed across all segments
-6. **Validation**: Ensures all segments have prices and stops are in correct order
-
-This implementation maintains all existing functionality while adding the multi-stop capability. The system now supports complex routes while providing a seamless booking experience for passengers.
